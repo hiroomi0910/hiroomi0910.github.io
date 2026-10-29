@@ -1,0 +1,60 @@
+---
+// エンジニアページのセクション。左に見出し、右に本文（狭い画面では縦積み）。
+interface Props {
+  id: string;
+  label: string;
+  title: string;
+}
+
+const { id, label, title } = Astro.props;
+---
+
+<section class="section" id={id} aria-labelledby={`${id}-title`}>
+  <div class="section-head">
+    <span class="section-label">{label}</span>
+    <h2 class="section-title" id={`${id}-title`}>{title}</h2>
+  </div>
+  <div class="section-body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section {
+    border-top: 1px solid var(--color-line);
+    padding: 48px 0 56px;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 72px;
+    row-gap: 24px;
+    scroll-margin-top: 16px;
+  }
+
+  .section-head {
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    line-height: 1.5;
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .section-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.4;
+  }
+
+  .section-body {
+    flex: 999 1 600px;
+    min-width: 0;
+  }
+</style>

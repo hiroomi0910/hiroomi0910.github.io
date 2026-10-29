@@ -1,0 +1,521 @@
+---
+// エンジニアページ。content/ のデータだけで組む。
+import ContactButton from '../../components/ContactButton.astro';
+import Footer from '../../components/Footer.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Section from '../../components/Section.astro';
+import Tags from '../../components/Tags.astro';
+import Base from '../../layouts/Base.astro';
+import { personalProjects, profile, projects, site, skills, timeline } from '../../lib/content';
+
+const sections = [
+  { id: 'about', label: 'ABOUT', title: '自己紹介' },
+  { id: 'skills', label: 'SKILLS', title: 'スキル' },
+  { id: 'projects', label: 'PROJECTS', title: '案件' },
+  { id: 'career', label: 'CAREER', title: '経歴' },
+  { id: 'works', label: 'WORKS', title: '個人開発' },
+  { id: 'contact', label: 'CONTACT', title: 'お問い合わせ' },
+] as const;
+type SectionId = (typeof sections)[number]['id'];
+const sec = (id: SectionId) => sections.find((s) => s.id === id)!;
+
+const aboutParagraphs = profile.about
+  .split(/\n\s*\n/)
+  .map((p) => p.trim())
+  .filter(Boolean);
+
+const serifText = [
+  site.display_name,
+  profile.role_ja,
+  ...sections.map((s) => s.title),
+  ...profile.strengths.map((s) => s.title),
+  ...projects.map((p) => p.title),
+  ...personalProjects.map((p) => p.title),
+].join('');
+---
+
+<Base title={`エンジニアとしての仕事 — ${site.display_name}`} description={profile.lead} serifText={serifText}>
+  <div class="page">
+    <div class="wrap">
+      <a class="back" href="/">
+        <span aria-hidden="true">←</span> 入口へ戻る
+      </a>
+
+      <header class="hero">
+        <span class="eyebrow">{profile.role.toUpperCase()}</span>
+        <h1 class="name">{site.display_name}</h1>
+        <div class="rule" aria-hidden="true"></div>
+        <p class="role">{profile.role_ja}</p>
+        <p class="lead">{profile.lead}</p>
+        <dl class="facts">
+          <dt>拠点</dt>
+          <dd>{profile.location}・{profile.work_style}</dd>
+          <dt>得意</dt>
+          <dd>{profile.specialties.join(' / ')}</dd>
+        </dl>
+      </header>
+
+      <nav class="toc" aria-label="ページ内の目次">
+        <ul>
+          {
+            sections.map((s) => (
+              <li>
+                <a href={`#${s.id}`}>{s.title}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <main id="main">
+        <Section {...sec('about')}>
+          <div class="prose">
+            {aboutParagraphs.map((p) => <p>{p}</p>)}
+          </div>
+          <h3 class="sub-title">強み</h3>
+          <ol class="strengths">
+            {
+              profile.strengths.map((s, i) => (
+                <li class="strength">
+                  <span class="strength-num" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <h4 class="strength-title">{s.title}</h4>
+                  <p class="strength-body">{s.body}</p>
+                </li>
+              ))
+            }
+          </ol>
+        </Section>
+
+        <Section {...sec('skills')}>
+          <dl class="skills">
+            {
+              skills.groups.map((g) => (
+                <div class="skill-row">
+                  <dt>{g.label}</dt>
+                  <dd>
+                    <Tags items={g.items} />
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+          {
+            skills.certifications.length > 0 && (
+              <>
+                <h3 class="sub-title">資格</h3>
+                <ul class="certs">
+                  {skills.certifications.map((c) => (
+                    <li>{c}</li>
+                  ))}
+                </ul>
+              </>
+            )
+          }
+        </Section>
+
+        <Section {...sec('projects')}>
+          <div class="stack">
+            {projects.map((p) => <ProjectCard project={p} />)}
+          </div>
+        </Section>
+
+        <Section {...sec('career')}>
+          <ol class="timeline">
+            {
+              timeline.map((t) => (
+                <li class="timeline-item">
+                  <span class="timeline-period">{t.period}</span>
+                  <div class="timeline-body">
+                    <p class="timeline-summary">{t.summary}</p>
+                    <Tags items={t.tech} label="使用技術" />
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+        </Section>
+
+        <Section {...sec('works')}>
+          <div class="stack">
+            {
+              personalProjects.map((w) => (
+                <article class="work">
+                  <p class="work-meta">
+                    {w.kind}
+                    <span aria-hidden="true">／</span>
+                    {w.status}
+                  </p>
+                  <h3 class="work-title">{w.title}</h3>
+                  <p class="work-summary">{w.summary}</p>
+                  <Tags items={w.tech} label="使用技術" />
+                  {w.links.length > 0 && (
+                    <ul class="work-links">
+                      {w.links.map((l) => (
+                        <li>
+                          <a href={l.url} rel="noopener">
+                            {l.label}
+                            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M7 17L17 7M9 7h8v8" />
+                            </svg>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
+              ))
+            }
+          </div>
+        </Section>
+
+        <Section {...sec('contact')}>
+          <div class="contact">
+            <p class="prose-line">お仕事のご相談やご連絡は、こちらからお願いします。</p>
+            <ContactButton />
+          </div>
+        </Section>
+      </main>
+
+      <Footer />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .page {
+    min-height: 100vh;
+    padding: 48px var(--gutter) 40px;
+  }
+
+  .wrap {
+    max-width: var(--container);
+    margin: 0 auto;
+  }
+
+  .back {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .back:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .hero {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 720px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  .name {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 56px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+
+  .rule {
+    width: 40px;
+    height: 2px;
+    background: var(--color-accent);
+  }
+
+  .role {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.75;
+  }
+
+  .lead {
+    margin: 0;
+    line-height: 1.95;
+    color: var(--color-ink-sub);
+  }
+
+  .facts {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 20px;
+    row-gap: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .facts dt {
+    color: var(--color-muted);
+  }
+
+  .facts dd {
+    margin: 0;
+  }
+
+  .toc {
+    margin: 48px 0 0;
+  }
+
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .toc a {
+    min-height: 44px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
+  }
+
+  .toc a:hover {
+    background: var(--color-surface-hover);
+    border-color: var(--color-line-hover);
+  }
+
+  main {
+    margin-top: 48px;
+  }
+
+  .prose p,
+  .prose-line {
+    margin: 0;
+    line-height: 1.95;
+    color: var(--color-ink-sub);
+  }
+
+  .prose p + p {
+    margin-top: 1em;
+  }
+
+  .sub-title {
+    margin: 40px 0 16px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .strengths {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    border-top: 1px solid var(--color-line);
+  }
+
+  .strength {
+    padding: 20px 24px 24px 0;
+    border-bottom: 1px solid var(--color-line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .strength-num {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .strength-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  .strength-body {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.85;
+    color: var(--color-ink-sub);
+  }
+
+  .skills {
+    margin: 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .skill-row {
+    display: grid;
+    grid-template-columns: 9em minmax(0, 1fr);
+    gap: 12px 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .skill-row dt {
+    font-size: 14px;
+    color: var(--color-muted);
+    line-height: 1.9;
+  }
+
+  .skill-row dd {
+    margin: 0;
+  }
+
+  .certs {
+    margin: 0;
+    padding-left: 1.2em;
+    line-height: 1.9;
+  }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 9em minmax(0, 1fr);
+    gap: 8px 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .timeline-period {
+    font-size: 14px;
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+    line-height: 1.9;
+  }
+
+  .timeline-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .timeline-summary {
+    margin: 0;
+    line-height: 1.9;
+  }
+
+  .work {
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    padding: 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .work-meta {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 6px;
+  }
+
+  .work-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.6;
+  }
+
+  .work-summary {
+    margin: 0;
+    line-height: 1.9;
+    color: var(--color-ink-sub);
+  }
+
+  .work-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 24px;
+  }
+
+  .work-links a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .contact {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  @media (max-width: 640px) {
+    .toc ul {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      margin: 0 calc(var(--gutter) * -1);
+      padding: 0 var(--gutter) 4px;
+      scrollbar-width: thin;
+    }
+
+    .skill-row,
+    .timeline-item {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .skill-row {
+      gap: 6px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .name {
+      font-size: 44px;
+    }
+
+    .work {
+      padding: 24px 20px;
+    }
+  }
+</style>

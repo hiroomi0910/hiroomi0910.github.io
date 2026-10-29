@@ -117,37 +117,26 @@ function warnPending(file: string, path: string): void {
   console.warn(`[content] ${file} の ${path} に「[要確認]」が残っています。この項目は表示しません。`);
 }
 
-function containsPending(value: unknown): boolean {
-  if (typeof value === 'string') return value.includes(PENDING_MARK);
-  if (Array.isArray(value)) return value.some(containsPending);
-  if (value && typeof value === 'object') return Object.values(value).some(containsPending);
-  return false;
-}
-
 /**
  * `[要確認` を含む値を取り除く。
- * - 配列の要素（文字列・オブジェクト）は要素ごと除く
+ * - 配列の中の文字列は要素ごと除く
  * - オブジェクトのフィールドはフィールドごと除く（必須項目なら検証でビルドが失敗する）
  */
 function stripPending(value: unknown, file: string, path: string): unknown {
+  if (typeof value === 'string' && value.includes(PENDING_MARK)) {
+    warnPending(file, path);
+    return undefined;
+  }
   if (Array.isArray(value)) {
     return value
-      .filter((item, i) => {
-        if (!containsPending(item)) return true;
-        warnPending(file, `${path}[${i}]`);
-        return false;
-      })
-      .map((item, i) => stripPending(item, file, `${path}[${i}]`));
+      .map((item, i) => stripPending(item, file, `${path}[${i}]`))
+      .filter((item) => item !== undefined);
   }
   if (value && typeof value === 'object') {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value)) {
-      const p = path ? `${path}.${k}` : k;
-      if (typeof v === 'string' && v.includes(PENDING_MARK)) {
-        warnPending(file, p);
-        continue;
-      }
-      out[k] = stripPending(v, file, p);
+      const stripped = stripPending(v, file, path ? `${path}.${k}` : k);
+      if (stripped !== undefined) out[k] = stripped;
     }
     return out;
   }
