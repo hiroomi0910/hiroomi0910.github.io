@@ -1,0 +1,17 @@
+# 会社員時代の年表（社名・出向先は出さない）
+
+- period: 2016〜2018
+  summary: 大手 EC モールのフロントエンド改修・LP 制作（SP / PC）、メンター役
+  tech: [HTML, Sass, jQuery, Gulp, Git]
+- period: 2012〜2016
+  summary: 法人向け eラーニング教材の制作・改修、動画・音声プレイヤー開発、撮影・編集
+  tech: [HTML, JavaScript, PHP, ActionScript]
+- period: 2010〜2012
+  summary: コールセンター向け業務マニュアルの HTML 制作、業務システムの運用
+  tech: [HTML, CSS]
+- period: 2007〜2010
+  summary: 顧客向け BI システムの設計・構築
+  tech: [Java, VB.NET, SQL Server, Oracle]
+- period: 2006〜2007
+  summary: 小売向け受発注システムの開発
+  tech: [Java, JSP, Oracle]

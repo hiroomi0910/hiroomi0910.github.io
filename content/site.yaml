@@ -1,0 +1,33 @@
+# サイト全体の設定。null の項目は表示しない
+
+display_name: Hiroomi
+brand: DYL            # 屋号（Design Your Life）。コピーライトに使う
+copyright_year: 2026
+
+links:
+  github: https://github.com/hiroomi0910
+  qiita: https://qiita.com/hiroomi0910
+  vscode_extension:
+    marketplace: https://marketplace.visualstudio.com/items?itemName=hiroomi.model-usage-display
+    open_vsx: https://open-vsx.org/extension/hiroomi/model-usage-display
+  linkedin: https://www.linkedin.com/in/hiroomi-dyl/
+  photography: https://zekkeiportrait.com
+
+contact:
+  form_url: null        # Google フォームを作ったら URL を入れる。入っていればフォームを優先
+  email:                # 分割して持ち、クリック時に組み立てる（HTML に完全な文字列を出さない）
+    user: designyourlife37
+    domain: gmail.com
+
+entrance:
+  accent: "#2F5D50"
+  # 写真枠の画像は、ビルド時に Cloudinary（写真サイトと同じアカウント）から1枚選ぶ。
+  # 認証情報は GitHub Secrets（CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET）。
+  # 取得できないときはプレースホルダを表示し、ビルドは止めない。
+  photo:
+    source: cloudinary
+    folder: portfolio        # 写真サイトと同じフォルダ
+    tag: entrance            # このタグが付いた画像を優先。1枚も無ければフォルダ全体から選ぶ
+    min_aspect: 1.3          # 横長（幅÷高さがこれ以上）の画像だけを候補にする
+    watermark: logo_ws69b6   # 写真サイトと同じ透かし画像の public_id
+    alt_fallback: ZEKKEI PORTRAIT の作品

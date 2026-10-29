@@ -1,0 +1,17 @@
+groups:
+  - label: 言語
+    items: [TypeScript, JavaScript, HTML, CSS / Sass, Ruby, SQL, Java（初期）]
+  - label: フロントエンド
+    items: [React, Next.js, Vite, Tailwind CSS, Storybook, Framer Motion]
+  - label: バックエンド
+    items: [Ruby on Rails, Node.js]
+  - label: 品質
+    items: [アクセシビリティ（WAI-ARIA・キーボード操作）, クロスレビュー, 単体テスト]
+  - label: ツール
+    items: [GitHub, Azure DevOps, Figma, Adobe XD, GitHub Copilot, Amazon Q, Claude]
+  - label: 個人開発で使用
+    items: [Playwright, Python, VS Code 拡張機能 API, GitHub Actions, Cloudinary]
+
+certifications:
+  - 基本情報技術者
+  - 色彩検定2級

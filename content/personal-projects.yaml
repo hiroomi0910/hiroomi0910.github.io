@@ -1,0 +1,31 @@
+# 個人開発。links が無いものはリンクを出さない（非公開リポジトリへのリンクは禁止）
+
+- title: Model Usage Display
+  kind: VS Code 拡張機能
+  status: VS Code Marketplace・Open VSX で公開中
+  summary: Antigravity の AI モデルの残量と回復時刻をステータスバーに表示。ローカルの Language Server から取得し、外部送信なし。日英対応、しきい値の通知。
+  tech: [TypeScript, VS Code Extension API]
+  links:
+    - label: GitHub
+      url: https://github.com/hiroomi0910/Model-usage-display
+    - label: Open VSX
+      url: https://open-vsx.org/extension/hiroomi/model-usage-display
+    - label: VS Code Marketplace
+      url: https://marketplace.visualstudio.com/items?itemName=hiroomi.model-usage-display
+
+- title: ZEKKEI PORTRAIT（写真サイト）
+  kind: Web サイト
+  status: 運用中
+  summary: 絶景ポートレートの作品集。Masonry レイアウトのギャラリーを Next.js・Tailwind CSS・Framer Motion・Cloudinary で構築。
+  tech: [Next.js, Tailwind CSS, Framer Motion, Cloudinary]
+  links:
+    - label: サイト
+      url: https://zekkeiportrait.com
+    - label: 制作記事（Qiita）
+      url: https://qiita.com/hiroomi0910/items/1ab4bbd62db3674b8024
+
+- title: Qiita 記事の GitHub 管理
+  kind: 執筆環境
+  status: 運用中
+  summary: Qiita CLI と GitHub Actions で、記事を Git で管理し main への push で公開。
+  tech: [Qiita CLI, GitHub Actions]
