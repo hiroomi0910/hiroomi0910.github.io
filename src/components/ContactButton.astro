@@ -1,0 +1,69 @@
+---
+// お問い合わせボタン。フォームの URL があればフォームへ、無ければメール。
+// メールアドレスは user と domain を別々の data 属性で持ち、押したときに組み立てる
+// （HTML・JS のどちらにも完全なアドレスや mailto: の文字列を置かない）。
+// スキーム名も逆順で持つ（data-s）。
+import { site } from '../lib/content';
+
+const { form_url: formUrl, email } = site.contact;
+---
+
+{
+  formUrl ? (
+    <a class="cta" href={formUrl} rel="noopener">
+      お問い合わせ
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 6h16v12H4z" />
+        <path d="M4 7l8 6 8-6" />
+      </svg>
+    </a>
+  ) : email ? (
+    <button class="cta" type="button" data-contact data-s="otliam" data-u={email.user} data-d={email.domain}>
+      お問い合わせ
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 6h16v12H4z" />
+        <path d="M4 7l8 6 8-6" />
+      </svg>
+    </button>
+  ) : null
+}
+
+<script>
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-contact]')) {
+    btn.addEventListener('click', () => {
+      const { s, u, d } = btn.dataset;
+      if (!s || !u || !d) return;
+      // 定数だとビルド時の最適化で1つの文字列に畳まれるため、
+      // スキームも逆順にした data 属性から実行時に組み立てる
+      const scheme = [...s].reverse().join('');
+      window.location.href = scheme + ':' + u + '@' + d;
+    });
+  }
+</script>
+
+<style>
+  .cta {
+    align-self: flex-start;
+    min-height: 48px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 2px;
+    background: var(--color-accent);
+    color: #ffffff;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cta:hover {
+    color: #ffffff;
+    filter: brightness(1.1);
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+// 全ページ共通の <head>。検索・AI 収集を拒否する meta はここで一括して出す。
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** 明朝（Noto Serif JP）で表示する文字。Google Fonts の text= でこの文字だけを読み込む */
+  serifText: string;
+}
+
+const { title, description, serifText } = Astro.props;
+
+// 重複を除いた文字だけを渡し、フォントの転送量を抑える
+const glyphs = [...new Set([...serifText.replace(/\s/g, '')])].sort().join('');
+const fontHref = `https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600&display=swap&text=${encodeURIComponent(glyphs)}`;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="robots" content="noai, noimageai" />
+    <meta name="tdm-reservation" content="1" />
+    <meta name="theme-color" content="#F6F4EF" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <slot name="head" />
+    <link rel="stylesheet" href={fontHref} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">本文へスキップ</a>
+    <slot />
+  </body>
+</html>

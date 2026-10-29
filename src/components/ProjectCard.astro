@@ -1,0 +1,124 @@
+---
+import type { Project } from '../lib/content';
+import Tags from './Tags.astro';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<article class="card">
+  <p class="period">{project.period}</p>
+  <h3 class="title">{project.title}</h3>
+  <dl class="meta">
+    <dt>役割</dt>
+    <dd>{project.role}</dd>
+    {
+      project.team && (
+        <>
+          <dt>規模</dt>
+          <dd>{project.team}</dd>
+        </>
+      )
+    }
+    {
+      project.phases.length > 0 && (
+        <>
+          <dt>担当工程</dt>
+          <dd>{project.phases.join('・')}</dd>
+        </>
+      )
+    }
+  </dl>
+  <p class="summary">{project.summary}</p>
+  {
+    project.highlights.length > 0 && (
+      <div class="highlights">
+        <h4 class="sub">取り組み</h4>
+        <ul>
+          {project.highlights.map((h) => (
+            <li>{h}</li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+  <Tags items={project.tech} label="使用技術" />
+</article>
+
+<style>
+  .card {
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    padding: 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .period {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.6;
+  }
+
+  .meta {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 20px;
+    row-gap: 6px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .meta dt {
+    color: var(--color-muted);
+  }
+
+  .meta dd {
+    margin: 0;
+  }
+
+  .summary {
+    margin: 0;
+    color: var(--color-ink-sub);
+    line-height: 1.9;
+  }
+
+  .sub {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .highlights ul {
+    margin: 0;
+    padding-left: 1.2em;
+    color: var(--color-ink-sub);
+    line-height: 1.9;
+  }
+
+  .highlights li + li {
+    margin-top: 6px;
+  }
+
+  @media (max-width: 480px) {
+    .card {
+      padding: 24px 20px;
+    }
+  }
+</style>
