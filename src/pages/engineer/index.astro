@@ -7,6 +7,7 @@ import Section from '../../components/Section.astro';
 import Tags from '../../components/Tags.astro';
 import Base from '../../layouts/Base.astro';
 import { personalProjects, profile, projects, site, skills, timeline } from '../../lib/content';
+import { getArticles } from '../../lib/qiita';
 
 const sections = [
   { id: 'about', label: 'ABOUT', title: '自己紹介' },
@@ -14,10 +15,15 @@ const sections = [
   { id: 'projects', label: 'PROJECTS', title: '案件' },
   { id: 'career', label: 'CAREER', title: '経歴' },
   { id: 'works', label: 'WORKS', title: '個人開発' },
+  { id: 'articles', label: 'ARTICLES', title: '技術記事' },
   { id: 'contact', label: 'CONTACT', title: 'お問い合わせ' },
 ] as const;
 type SectionId = (typeof sections)[number]['id'];
 const sec = (id: SectionId) => sections.find((s) => s.id === id)!;
+
+const articles = await getArticles();
+const dateFormat = new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
+const isoDate = (iso: string) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date(iso));
 
 const aboutParagraphs = profile.about
   .split(/\n\s*\n/)
@@ -168,6 +174,35 @@ const serifText = [
               ))
             }
           </div>
+        </Section>
+
+        <Section {...sec('articles')}>
+          {
+            articles.length > 0 ? (
+              <ol class="articles">
+                {articles.map((a) => (
+                  <li class="article">
+                    <a class="article-title" href={a.url} rel="noopener">
+                      {a.title}
+                    </a>
+                    <div class="article-meta">
+                      <time datetime={isoDate(a.created_at)}>{dateFormat.format(new Date(a.created_at))}</time>
+                      {a.likes_count > 0 && <span>いいね {a.likes_count}</span>}
+                    </div>
+                    <Tags items={a.tags} label="タグ" />
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p class="prose-line">記事の一覧は Qiita でご覧ください。</p>
+            )
+          }
+          <a class="more" href={site.links.qiita} rel="noopener">
+            Qiita のプロフィールを見る
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 17L17 7M9 7h8v8" />
+            </svg>
+          </a>
         </Section>
 
         <Section {...sec('contact')}>
@@ -476,6 +511,53 @@ const serifText = [
   }
 
   .work-links a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .articles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .article {
+    padding: 10px 0 20px;
+    border-bottom: 1px solid var(--color-line);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .article-title {
+    display: block;
+    padding: 9px 0;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .article-title:hover {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 16px;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  .more {
+    margin-top: 16px;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
