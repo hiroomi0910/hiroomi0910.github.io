@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../lib/content';
+
+const heading = 'ページが見つかりません';
+---
+
+<Base title={`${heading} — ${site.display_name}`} description={heading} serifText={heading}>
+  <main id="main" class="nf">
+    <p class="code">404</p>
+    <h1 class="title">{heading}</h1>
+    <a class="back" href="/">入口へ戻る</a>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    min-height: 100vh;
+    padding: 88px var(--gutter);
+    max-width: var(--container);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .code {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    color: var(--color-muted);
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.4;
+  }
+
+  .back {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+</style>
