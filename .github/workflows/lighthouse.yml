@@ -1,0 +1,53 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # PR では Secrets を渡さない（フォークからの PR でも動くように）。写真はプレースホルダ、記事はキャッシュになる
+      - name: Build
+        run: npm run build
+
+      - name: Check dist
+        run: npm run check:dist
+
+      - name: Lighthouse（80 未満で失敗）
+        run: npx lhci collect && npx lhci assert
+
+      - name: Lighthouse（90 未満で警告）
+        if: always()
+        run: npx lhci assert --config=lighthouserc.warn.json
+
+      - name: Save reports
+        if: always()
+        run: |
+          npx lhci upload
+          node scripts/lighthouse-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/reports/
+          retention-days: 14
