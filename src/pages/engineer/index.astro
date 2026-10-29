@@ -160,8 +160,9 @@ const serifText = [
                     <ul class="work-links">
                       {w.links.map((l) => (
                         <li>
-                          <a href={l.url} rel="noopener">
+                          <a href={l.url} target="_blank" rel="noopener">
                             {l.label}
+                            <span class="visually-hidden">（新しいタブで開きます）</span>
                             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                               <path d="M7 17L17 7M9 7h8v8" />
                             </svg>
@@ -182,8 +183,9 @@ const serifText = [
               <ol class="articles">
                 {articles.map((a) => (
                   <li class="article">
-                    <a class="article-title" href={a.url} rel="noopener">
+                    <a class="article-title" href={a.url} target="_blank" rel="noopener">
                       {a.title}
+                      <span class="visually-hidden">（新しいタブで開きます）</span>
                     </a>
                     <div class="article-meta">
                       <time datetime={isoDate(a.created_at)}>{dateFormat.format(new Date(a.created_at))}</time>
@@ -197,8 +199,9 @@ const serifText = [
               <p class="prose-line">記事の一覧は Qiita でご覧ください。</p>
             )
           }
-          <a class="more" href={site.links.qiita} rel="noopener">
+          <a class="more" href={site.links.qiita} target="_blank" rel="noopener">
             Qiita のプロフィールを見る
+            <span class="visually-hidden">（新しいタブで開きます）</span>
             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M7 17L17 7M9 7h8v8" />
             </svg>
@@ -539,13 +542,16 @@ const serifText = [
     font-size: 16px;
     line-height: 1.7;
     color: var(--color-ink);
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-color: var(--color-line-hover);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 5px;
+    transition: text-decoration-color 0.15s;
   }
 
   .article-title:hover {
     color: var(--color-ink);
-    text-decoration: underline;
-    text-underline-offset: 4px;
+    text-decoration-color: var(--color-accent);
   }
 
   .article-meta {
