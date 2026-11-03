@@ -1,0 +1,280 @@
+---
+// 「このサイトの作り」の構成図。ビルド時に静的な SVG として出力する（クライアント JS なし）。
+// 配置と線は src/lib/architecture.ts、中身は content/architecture.yaml。
+import { diagram } from '../lib/architecture';
+import { architecture } from '../lib/content';
+
+const { width, height, tile, icon, groups, nodes, edges, legend } = diagram;
+const iconScale = icon / 960;
+const iconOffset = (tile - icon) / 2;
+const kinds = ['main', 'sub', 'ops', 'deny'] as const;
+---
+
+<div class="diagram" role="region" aria-label="構成図（横にスクロールできます）" tabindex="0">
+  <svg
+    class="svg"
+    viewBox={`0 0 ${width} ${height}`}
+    role="img"
+    aria-label={architecture.aria_label}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      {
+        kinds.map((k) => (
+          <marker id={`arch-arrow-${k}`} class={`marker-${k}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+            {k === 'deny' ? <path d="M9 0 V10" stroke-width="2.4" /> : <path d="M0 0 L10 5 L0 10 z" />}
+          </marker>
+        ))
+      }
+    </defs>
+
+    <g class="groups">
+      {
+        groups.map((g) => (
+          <g class={`group tone-${g.tone}`}>
+            <rect class="group-frame" x={g.x} y={g.y} width={g.w} height={g.h} rx="2" />
+            <text class="group-title" x={g.x + 16} y={g.titleY}>
+              {g.title}
+              {g.note && (
+                <tspan class="group-note" dx="10">
+                  {g.note}
+                </tspan>
+              )}
+            </text>
+          </g>
+        ))
+      }
+    </g>
+
+    <g class="edges">
+      {
+        edges.map((e) => (
+          <path class={`edge edge-${e.kind}`} d={e.d} marker-end={`url(#arch-arrow-${e.kind})`} />
+        ))
+      }
+      {
+        edges.map(
+          (e) =>
+            e.label && (
+              <text class={`edge-label label-${e.kind}`} x={e.label.x} y={e.label.y} text-anchor={e.label.anchor}>
+                {e.label.text}
+              </text>
+            ),
+        )
+      }
+    </g>
+
+    <g class="nodes">
+      {
+        nodes.map((n) => (
+          <g class={`node tone-${n.tone}`}>
+            {n.logoUrl ? (
+              <>
+                <rect class="tile tile-logo" x={n.tileX} y={n.tileY} width={tile} height={tile} rx="2" />
+                <image href={n.logoUrl} x={n.tileX + 8} y={n.tileY + 8} width={tile - 16} height={tile - 16} preserveAspectRatio="xMidYMid meet" />
+              </>
+            ) : (
+              <>
+                <rect class="tile" x={n.tileX} y={n.tileY} width={tile} height={tile} rx="2" />
+                <path
+                  class="icon"
+                  d={n.iconD}
+                  transform={`translate(${n.tileX + iconOffset} ${n.tileY + iconOffset}) scale(${iconScale}) translate(0 960)`}
+                />
+              </>
+            )}
+            <text class="node-name" text-anchor="middle">
+              {n.name.map((l) => (
+                <tspan x={n.cx} y={l.y}>
+                  {l.text}
+                </tspan>
+              ))}
+            </text>
+            {n.desc.length > 0 && (
+              <text class="node-desc" text-anchor="middle">
+                {n.desc.map((l) => (
+                  <tspan x={n.cx} y={l.y}>
+                    {l.text}
+                  </tspan>
+                ))}
+              </text>
+            )}
+          </g>
+        ))
+      }
+    </g>
+
+    <g class="legend">
+      {
+        legend.map((l) => (
+          <g>
+            <path class={`edge edge-${l.kind}`} d={`M${l.x} ${l.y - 5} H${l.x + 34}`} marker-end={`url(#arch-arrow-${l.kind})`} />
+            <text class="legend-text" x={l.x + 44} y={l.y}>
+              {l.text}
+            </text>
+          </g>
+        ))
+      }
+    </g>
+  </svg>
+</div>
+
+<style>
+  .diagram {
+    --arch-deny: #9b3426;
+    overflow-x: auto;
+    border: 1px solid var(--color-line);
+    background: var(--color-bg);
+    scrollbar-width: thin;
+  }
+
+  .diagram:focus-visible {
+    outline-offset: 2px;
+  }
+
+  .svg {
+    display: block;
+    width: 100%;
+    min-width: 960px;
+    height: auto;
+    font-family: var(--font-sans);
+  }
+
+  .group-frame {
+    fill: var(--color-surface);
+    stroke: var(--color-line);
+    stroke-width: 1;
+  }
+
+  .tone-core .group-frame {
+    stroke: var(--color-line-hover);
+  }
+
+  .group-title {
+    font-size: 15px;
+    font-weight: 700;
+    fill: var(--color-ink);
+  }
+
+  .group-note {
+    font-size: 13px;
+    font-weight: 400;
+    fill: var(--color-muted);
+  }
+
+  /* タイルの色はグループの種類で変える（アイコンは currentColor） */
+  .tile {
+    stroke-width: 1;
+  }
+
+  .tone-core .tile {
+    fill: var(--color-accent);
+    stroke: var(--color-accent);
+  }
+
+  .tone-core {
+    color: var(--color-accent-ink);
+  }
+
+  .tone-data .tile {
+    fill: var(--color-tag-bg);
+    stroke: var(--color-line-hover);
+  }
+
+  .tone-data {
+    color: var(--color-ink);
+  }
+
+  .tone-outside .tile {
+    fill: var(--color-surface);
+    stroke: var(--color-line-hover);
+  }
+
+  .tone-outside {
+    color: var(--color-ink-sub);
+  }
+
+  /* 公式ロゴは白のタイルに置く（ロゴ自体の色は変えない） */
+  .tile-logo {
+    fill: #ffffff;
+    stroke: var(--color-line-hover);
+  }
+
+  .icon {
+    fill: currentColor;
+  }
+
+  .node-name {
+    font-size: 14px;
+    font-weight: 700;
+    fill: var(--color-ink);
+  }
+
+  .node-desc {
+    font-size: 13px;
+    fill: var(--color-ink-sub);
+  }
+
+  .edge {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  .edge-main {
+    stroke: var(--color-accent);
+  }
+
+  .edge-sub {
+    stroke: var(--color-ink-sub);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 4;
+  }
+
+  .edge-ops {
+    stroke: var(--color-muted);
+    stroke-dasharray: 1 5;
+    stroke-linecap: round;
+  }
+
+  .edge-deny {
+    stroke: var(--arch-deny);
+    stroke-dasharray: 8 4;
+  }
+
+  .marker-main {
+    fill: var(--color-accent);
+  }
+
+  .marker-sub {
+    fill: var(--color-ink-sub);
+  }
+
+  .marker-ops {
+    fill: var(--color-muted);
+  }
+
+  .marker-deny {
+    stroke: var(--arch-deny);
+  }
+
+  .edge-label,
+  .legend-text {
+    font-size: 13px;
+    fill: var(--color-ink-sub);
+    paint-order: stroke;
+    stroke: var(--color-bg);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  .label-main {
+    fill: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .label-deny {
+    fill: var(--arch-deny);
+    font-weight: 700;
+  }
+</style>

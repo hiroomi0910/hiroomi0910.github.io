@@ -4,12 +4,14 @@ interface Props {
   id: string;
   label: string;
   title: string;
+  /** 見出しを上に置き、本文をコンテナ幅いっぱいに使う（図など） */
+  wide?: boolean;
 }
 
-const { id, label, title } = Astro.props;
+const { id, label, title, wide = false } = Astro.props;
 ---
 
-<section class="section" id={id} aria-labelledby={`${id}-title`}>
+<section class:list={['section', { wide }]} id={id} aria-labelledby={`${id}-title`}>
   <div class="section-head">
     <span class="section-label">{label}</span>
     <h2 class="section-title" id={`${id}-title`}>{title}</h2>
@@ -56,5 +58,10 @@ const { id, label, title } = Astro.props;
   .section-body {
     flex: 999 1 600px;
     min-width: 0;
+  }
+
+  .wide .section-head,
+  .wide .section-body {
+    flex-basis: 100%;
   }
 </style>

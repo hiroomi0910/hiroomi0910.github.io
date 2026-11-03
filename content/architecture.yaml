@@ -1,0 +1,181 @@
+# エンジニアページ「このサイトの作り」の構成図と要点。
+# 図の座標は src/lib/architecture.ts の固定レイアウトで計算する（ここには中身だけを書く）。
+# icon は src/assets/icons/ の Material Symbols（Outlined・400）のファイル名。
+# name・desc は配列にすると、その位置で改行する。
+# logo は公式ロゴの使用を確認できたもの（github のみ）。ファイルが無ければ icon で表示する。
+
+aria_label: このサイトの構成図。設計・開発から GitHub Actions でビルドし、GitHub Pages で配信するまでの流れ
+
+visitor:
+  id: visitor
+  name: 訪問者
+  icon: person
+
+groups:
+  # 1段目
+  - id: dev
+    title: 設計・開発
+    tone: core
+    nodes:
+      - id: claude
+        name: Claude
+        desc: 調査・掲載内容・デザイン案
+        icon: forum
+      - id: claude-code
+        name: Claude Code
+        desc: クラウドで実装、PR を作成
+        icon: terminal
+      - id: github
+        name: GitHub
+        desc: 公開リポジトリ、マージは本人
+        icon: code
+        logo: github
+  - id: actions
+    title: GitHub Actions
+    tone: core
+    nodes:
+      - id: deploy
+        name: Deploy
+        desc: [main への push と, 毎朝 5:17]
+        icon: rocket_launch
+      - id: lighthouse
+        name: Lighthouse CI
+        desc: PR ごと、80 点未満で失敗
+        icon: speed
+      - id: secrets
+        name: Secrets
+        desc: [Cloudinary の鍵を, ビルドにだけ渡す]
+        icon: key
+
+  # 2段目
+  - id: materials
+    title: ビルドの材料
+    tone: data
+    nodes:
+      - id: content
+        name: content/*.yaml
+        desc: 掲載データ、zod で検証
+        icon: description
+      - id: cloudinary
+        name: Cloudinary
+        desc: 写真を1枚選ぶ、署名・透かし付き
+        icon: photo_library
+      - id: qiita
+        name: Qiita API v2
+        desc: 記事一覧、失敗時はキャッシュ
+        icon: article
+  - id: build
+    title: ビルド
+    tone: core
+    nodes:
+      - id: astro
+        name: Astro
+        desc: 静的出力、TypeScript strict
+        icon: build
+      - id: check-dist
+        name: check:dist
+        desc: noindex・メール・API キーを検査
+        icon: fact_check
+
+  # 3段目
+  - id: delivery
+    title: 配信
+    note: GitHub Pages
+    tone: core
+    nodes:
+      - id: entrance
+        name: /
+        desc: 入口
+        icon: public
+      - id: engineer
+        name: /engineer/
+        desc: エンジニアページ
+        icon: public
+      - id: robots
+        name: robots.txt
+        desc: [AI クローラー, 約20種を拒否]
+        icon: block
+  - id: browser
+    title: ブラウザが直接読み込むもの
+    tone: data
+    nodes:
+      - id: cloudinary-cdn
+        name: res.cloudinary.com
+        desc: 入口の写真
+        icon: image
+      - id: google-fonts
+        name: Google Fonts
+        desc: 明朝体を使う文字だけ
+        icon: font_download
+
+  # 4段目
+  - id: crawlers
+    title: クローラーへの対応
+    tone: outside
+    nodes:
+      - id: search-engine
+        name: 検索エンジン
+        desc: 巡回は許可、noindex で載らない
+        icon: search
+      - id: ai-crawler
+        name: AI クローラー
+        desc: [robots.txt で拒否, noai・tdm-reservation]
+        icon: smart_toy
+  - id: links
+    title: リンク先
+    tone: outside
+    nodes:
+      - id: zekkei
+        name: ZEKKEI PORTRAIT
+        desc: Vercel で配信、DNS は Cloudflare®
+        icon: photo_camera
+      - id: profiles
+        name: [GitHub・Qiita・, LinkedIn・VS Code 拡張]
+        icon: link
+      - id: contact
+        name: お問い合わせ
+        desc: [押したときに, アドレスを組み立て]
+        icon: mail
+
+# kind: main＝公開までの主な流れ、sub＝データの取得、ops＝自動実行・リンク、deny＝拒否
+# route: h＝横、over＝上に回り込む、elbow＝下→横→下、v＝縦
+# 端点は ノード id／グループ id／{ group, at: ノード id }（グループの上端・下端のうち、そのノードの真上・真下）
+edges:
+  - { from: claude, to: claude-code, kind: main, label: 仕様・計画, route: h }
+  - { from: claude-code, to: github, kind: main, label: PR, route: h }
+  - { from: github, to: deploy, kind: main, label: マージ, route: h }
+  - { from: github, to: lighthouse, kind: ops, label: PR ごとに検査, route: over }
+  - { from: deploy, to: { group: build, at: astro }, kind: main, label: ビルド開始, route: elbow }
+  - { from: materials, to: astro, kind: sub, label: 材料を読む, route: h }
+  - { from: astro, to: check-dist, kind: main, route: h }
+  - { from: check-dist, to: { group: delivery, at: engineer }, kind: main, label: 合格したら公開, route: elbow }
+  - { from: visitor, to: delivery, kind: main, label: HTTPS, route: h, label_side: below }
+  - { from: delivery, to: browser, kind: sub, label: 写真・字体, route: h }
+  - { from: { group: crawlers, at: search-engine }, to: delivery, kind: deny, label: noindex, route: v }
+  - { from: { group: crawlers, at: ai-crawler }, to: delivery, kind: deny, label: 拒否, route: v }
+  - { from: delivery, to: links, kind: ops, label: リンク, route: elbow }
+
+legend:
+  main: 公開までの主な流れ
+  sub: データの取得
+  ops: 自動実行・リンク
+  deny: 拒否
+
+points:
+  - title: サーバーを持たない
+    items:
+      - 外部データ（写真・記事）はビルドのときだけ取りに行き、HTML に焼き込む
+      - 毎朝 5:17 に作り直すので、入口の写真が日替わりになる
+      - API の鍵は Secrets にだけ置き、公開物に出ないことを check:dist で確かめる
+  - title: 検索にも AI にも渡さない
+    items:
+      - 全ページ noindex
+      - 検索エンジンの巡回は止めない（止めると noindex が読まれない）
+      - AI クローラーは robots.txt と meta で拒否する（守るかは相手次第の宣言）
+  - title: 公開前に自動で止める
+    items:
+      - PR ごとに Lighthouse CI を実行する
+      - メールアドレスや mailto の文字列が残っていればビルドを失敗させる
+      - 案件は社名・URL を出さず、業種と担当内容で書く
+
+trademark: GitHub は GitHub, Inc. の商標です。Cloudflare は Cloudflare, Inc. の米国およびその他の国における登録商標です。その他の会社名・サービス名は、各社の商標または登録商標です。

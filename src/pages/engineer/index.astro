@@ -1,12 +1,13 @@
 ---
 // エンジニアページ。content/ のデータだけで組む。
+import ArchitectureDiagram from '../../components/ArchitectureDiagram.astro';
 import ContactButton from '../../components/ContactButton.astro';
 import Footer from '../../components/Footer.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import Section from '../../components/Section.astro';
 import Tags from '../../components/Tags.astro';
 import Base from '../../layouts/Base.astro';
-import { personalProjects, profile, projects, site, skills, timeline } from '../../lib/content';
+import { architecture, personalProjects, profile, projects, site, skills, timeline } from '../../lib/content';
 import { getArticles } from '../../lib/qiita';
 
 const sections = [
@@ -16,12 +17,30 @@ const sections = [
   { id: 'career', label: 'CAREER', title: '経歴' },
   { id: 'works', label: 'WORKS', title: '個人開発' },
   { id: 'articles', label: 'ARTICLES', title: '技術記事' },
+  { id: 'architecture', label: 'ARCHITECTURE', title: 'このサイトの作り' },
   { id: 'contact', label: 'CONTACT', title: 'お問い合わせ' },
 ] as const;
 type SectionId = (typeof sections)[number]['id'];
 const sec = (id: SectionId) => sections.find((s) => s.id === id)!;
 
 const articles = await getArticles();
+
+// 図の中で改行した文字を1行に戻す
+const joinLines = (s: string | string[]) => (Array.isArray(s) ? s.join('') : s);
+
+// 構成図の線を文章にしたもの（図を見られない人向けの一覧）
+const archNames = new Map<string, string>([
+  [architecture.visitor.id, architecture.visitor.name],
+  ...architecture.groups.flatMap((g) => [
+    [g.id, g.title] as [string, string],
+    ...g.nodes.map((n) => [n.id, joinLines(n.name)] as [string, string]),
+  ]),
+]);
+const archName = (ep: (typeof architecture.edges)[number]['from']) =>
+  typeof ep === 'string' ? archNames.get(ep) ?? ep : archNames.get(ep.group) ?? ep.group;
+const flows = architecture.edges.map(
+  (e) => `${archName(e.from)} → ${archName(e.to)}${e.label ? `（${e.label}）` : ''}`,
+);
 const dateFormat = new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
 const isoDate = (iso: string) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date(iso));
 
@@ -37,6 +56,7 @@ const serifText = [
   ...profile.strengths.map((s) => s.title),
   ...projects.map((p) => p.title),
   ...personalProjects.map((p) => p.title),
+  ...architecture.points.map((p) => p.title),
 ].join('');
 ---
 
@@ -206,6 +226,59 @@ const serifText = [
               <path d="M7 17L17 7M9 7h8v8" />
             </svg>
           </a>
+        </Section>
+
+        <Section {...sec('architecture')} wide>
+          <ArchitectureDiagram />
+          <ol class="points">
+            {
+              architecture.points.map((p, i) => (
+                <li class="point">
+                  <span class="strength-num" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <h3 class="point-title">{p.title}</h3>
+                  <ul class="point-items">
+                    {p.items.map((item) => (
+                      <li>{item}</li>
+                    ))}
+                  </ul>
+                </li>
+              ))
+            }
+          </ol>
+          <details class="arch-list">
+            <summary>構成の一覧</summary>
+            <div class="arch-list-body">
+              {
+                architecture.groups.map((g) => (
+                  <div class="arch-group">
+                    <h4 class="arch-group-title">
+                      {g.title}
+                      {g.note && <span class="arch-group-note">（{g.note}）</span>}
+                    </h4>
+                    <ul>
+                      {g.nodes.map((n) => (
+                        <li>
+                          <strong>{joinLines(n.name)}</strong>
+                          {n.desc && <>: {joinLines(n.desc)}</>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              }
+              <div class="arch-group">
+                <h4 class="arch-group-title">流れ</h4>
+                <ul>
+                  {flows.map((f) => (
+                    <li>{f}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </details>
+          <p class="trademark">{architecture.trademark}</p>
         </Section>
 
         <Section {...sec('contact')}>
@@ -569,6 +642,111 @@ const serifText = [
     align-items: center;
     gap: 6px;
     font-size: 14px;
+  }
+
+  .points {
+    list-style: none;
+    margin: 32px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    column-gap: 32px;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .point {
+    padding: 20px 0 24px;
+    border-bottom: 1px solid var(--color-line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .point-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  .point-items {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 14px;
+    line-height: 1.85;
+    color: var(--color-ink-sub);
+  }
+
+  .arch-list {
+    margin-top: 24px;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .arch-list summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    list-style: none;
+  }
+
+  .arch-list summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .arch-list summary::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.15s;
+  }
+
+  .arch-list[open] summary::before {
+    transform: rotate(45deg);
+  }
+
+  .arch-list-body {
+    padding: 4px 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px 32px;
+  }
+
+  .arch-group-title {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .arch-group-note {
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+
+  .arch-group ul {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--color-ink-sub);
+  }
+
+  .arch-group strong {
+    color: var(--color-ink);
+  }
+
+  .trademark {
+    margin: 16px 0 0;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--color-muted);
   }
 
   .contact {
