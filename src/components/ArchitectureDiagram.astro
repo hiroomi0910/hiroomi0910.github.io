@@ -195,7 +195,8 @@ const kinds = ['main', 'sub', 'ops', 'deny'] as const;
   }
 
   /* 公式ロゴは白のタイルに置く（ロゴ自体の色は変えない） */
-  .tile-logo {
+  .tile.tile-logo,
+  .tone-core .tile.tile-logo {
     fill: #ffffff;
     stroke: var(--color-line-hover);
   }
