@@ -86,6 +86,8 @@ export const siteSchema = z.object({
       .object({
         user: text,
         domain: text,
+        subjects: z.object({ top: text, engineer: text }),
+        body: z.string().default(''),
       })
       .nullable()
       .default(null),

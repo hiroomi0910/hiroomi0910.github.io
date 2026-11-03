@@ -1,11 +1,22 @@
 ---
-// お問い合わせボタン。フォームの URL があればフォームへ、無ければメール。
+// お問い合わせボタン。フォームの URL があればフォームへ、無ければメール（件名と本文のひな形つき）。
 // メールアドレスは user と domain を別々の data 属性で持ち、押したときに組み立てる
 // （HTML・JS のどちらにも完全なアドレスや mailto: の文字列を置かない）。
 // スキーム名も逆順で持つ（data-s）。
 import { site } from '../lib/content';
 
+interface Props {
+  /** どのページのボタンか。メールの件名を切り替える */
+  from: 'top' | 'engineer';
+}
+const { from } = Astro.props;
 const { form_url: formUrl, email } = site.contact;
+
+// 件名と本文はビルド時に URL 用に変換しておく（改行はメールの規格どおり CRLF に）
+const enc = (v: string) => encodeURIComponent(v.replace(/\r?\n/g, '\r\n'));
+const query = email
+  ? '?subject=' + enc(email.subjects[from]) + (email.body.trim() ? '&body=' + enc(email.body.trimEnd() + '\n') : '')
+  : '';
 ---
 
 {
@@ -18,7 +29,7 @@ const { form_url: formUrl, email } = site.contact;
       </svg>
     </a>
   ) : email ? (
-    <button class="cta" type="button" data-contact data-s="otliam" data-u={email.user} data-d={email.domain}>
+    <button class="cta" type="button" data-contact data-s="otliam" data-u={email.user} data-d={email.domain} data-q={query}>
       お問い合わせ
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 6h16v12H4z" />
@@ -31,12 +42,12 @@ const { form_url: formUrl, email } = site.contact;
 <script>
   for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-contact]')) {
     btn.addEventListener('click', () => {
-      const { s, u, d } = btn.dataset;
+      const { s, u, d, q } = btn.dataset;
       if (!s || !u || !d) return;
       // 定数だとビルド時の最適化で1つの文字列に畳まれるため、
       // スキームも逆順にした data 属性から実行時に組み立てる
       const scheme = [...s].reverse().join('');
-      window.location.href = scheme + ':' + u + '@' + d;
+      window.location.href = scheme + ':' + u + '@' + d + (q ?? '');
     });
   }
 </script>
