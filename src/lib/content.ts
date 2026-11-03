@@ -3,6 +3,7 @@
 // `[要確認` を含む値は表示せず、ビルド時に警告を出す。
 import { parse } from 'yaml';
 import { z } from 'zod';
+import architectureYaml from '../../content/architecture.yaml?raw';
 import personalProjectsYaml from '../../content/personal-projects.yaml?raw';
 import profileYaml from '../../content/profile.yaml?raw';
 import projectsYaml from '../../content/projects.yaml?raw';
@@ -102,12 +103,56 @@ export const siteSchema = z.object({
   }),
 });
 
+// 図の中の文字。配列にすると、その位置で改行する（各行は幅に合わせてさらに折り返す）
+const linesSchema = z.union([text, z.array(text).min(1)]);
+const endpointSchema = z.union([text, z.object({ group: text, at: text })]);
+
+export const architectureSchema = z.object({
+  aria_label: text,
+  visitor: z.object({ id: text, name: text, icon: text }),
+  groups: z
+    .array(
+      z.object({
+        id: text,
+        title: text,
+        note: text.optional(),
+        tone: z.enum(['core', 'data', 'outside']),
+        nodes: z
+          .array(
+            z.object({
+              id: text,
+              name: linesSchema,
+              desc: linesSchema.optional(),
+              icon: text,
+              logo: z.literal('github').optional(),
+            }),
+          )
+          .min(1),
+      }),
+    )
+    .min(1),
+  edges: z.array(
+    z.object({
+      from: endpointSchema,
+      to: endpointSchema,
+      kind: z.enum(['main', 'sub', 'ops', 'deny']),
+      label: text.optional(),
+      route: z.enum(['h', 'over', 'elbow', 'v']),
+      label_side: z.enum(['above', 'below']).default('above'),
+    }),
+  ),
+  legend: z.object({ main: text, sub: text, ops: text, deny: text }),
+  points: z.array(z.object({ title: text, items: z.array(text).min(1) })).min(1),
+  trademark: text,
+});
+
 export type Profile = z.infer<typeof profileSchema>;
 export type Skills = z.infer<typeof skillsSchema>;
 export type Project = z.infer<typeof projectsSchema>[number];
 export type TimelineEntry = z.infer<typeof timelineSchema>[number];
 export type PersonalProject = z.infer<typeof personalProjectsSchema>[number];
 export type Site = z.infer<typeof siteSchema>;
+export type Architecture = z.infer<typeof architectureSchema>;
 
 const warned = new Set<string>();
 function warnPending(file: string, path: string): void {
@@ -158,3 +203,4 @@ export const projects: Project[] = load('projects.yaml', projectsYaml, projectsS
 export const timeline: TimelineEntry[] = load('timeline.yaml', timelineYaml, timelineSchema);
 export const personalProjects: PersonalProject[] = load('personal-projects.yaml', personalProjectsYaml, personalProjectsSchema);
 export const site: Site = load('site.yaml', siteYaml, siteSchema);
+export const architecture: Architecture = load('architecture.yaml', architectureYaml, architectureSchema);
