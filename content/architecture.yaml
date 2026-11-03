@@ -119,7 +119,7 @@ groups:
         icon: search
       - id: ai-crawler
         name: AI クローラー
-        desc: [robots.txt で拒否, noai・tdm-reservation]
+        desc: [robots.txt で拒否、, noai・tdm-reservation]
         icon: smart_toy
   - id: links
     title: リンク先
