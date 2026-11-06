@@ -54,7 +54,7 @@ const serifText = [site.display_name, profile.tagline_serif, `${profile.years_on
           </div>
           <div class="row-body">
             <span class="row-label">ENGINEERING</span>
-            <span class="row-title">エンジニアとしての仕事</span>
+            <span class="row-title">エンジニアとしての<span class="nowrap">仕事<span class="row-arrow" aria-hidden="true">→</span></span></span>
             <span class="row-text">関わってきた案件、個人開発の VS Code 拡張、技術記事をまとめています。</span>
             <span class="chips">
               <span class="chip">経歴</span>
@@ -90,7 +90,7 @@ const serifText = [site.display_name, profile.tagline_serif, `${profile.years_on
             <span class="row-host">
               {photographyHost}
               <span class="visually-hidden">（新しいタブで開きます）</span>
-              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="row-arrow-ext" aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M7 17L17 7M9 7h8v8" />
               </svg>
             </span>
@@ -104,6 +104,12 @@ const serifText = [site.display_name, profile.tagline_serif, `${profile.years_on
     </div>
   </div>
 </Base>
+
+<script>
+  // iPhone の Safari は、ページにタッチの処理が無いと :active の見た目を出さないことがある。
+  // 何もしない処理を登録して、入口カードを押したときの沈み込みを出す。
+  document.addEventListener('touchstart', () => {}, { passive: true });
+</script>
 
 <style>
   .page {
@@ -199,9 +205,80 @@ const serifText = [site.display_name, profile.tagline_serif, `${profile.years_on
     color: var(--color-ink);
     border: 1px solid var(--color-line);
     background: var(--color-surface);
+    /* 押したときに沈む分の影（押すと 0 になる） */
+    box-shadow: 0 3px 0 var(--color-line);
+    -webkit-tap-highlight-color: transparent;
     transition:
       background 0.15s,
-      border-color 0.15s;
+      border-color 0.15s,
+      transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* 押したとき：速く沈み（70ms）、離すとゆっくり戻る（220ms） */
+  .row:active {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 var(--color-line);
+    transition-duration: 0.15s, 0.15s, 0.07s, 0.07s;
+    transition-timing-function: ease, ease, ease-out, ease-out;
+  }
+
+  /* 行き先を示す矢印：ホバーで少し、押すとさらに進む */
+  .row-arrow,
+  .row-arrow-ext {
+    display: inline-block;
+    color: var(--color-accent);
+    transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* スマホで「事」だけが次の行に残らないよう、「仕事 →」をまとめて折り返す */
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .row-arrow {
+    margin-left: 0.4em;
+    font-family: var(--font-sans);
+    font-weight: 400;
+  }
+
+  .row:hover .row-arrow {
+    transform: translateX(4px);
+  }
+
+  .row:active .row-arrow {
+    transform: translateX(10px);
+    transition-duration: 0.09s;
+  }
+
+  .row:hover .row-arrow-ext {
+    transform: translate(2px, -2px);
+  }
+
+  .row:active .row-arrow-ext {
+    transform: translate(5px, -5px);
+    transition-duration: 0.09s;
+  }
+
+  /* 動きを減らす設定の人には、動きを止めて枠の色だけで押したことを伝える */
+  @media (prefers-reduced-motion: reduce) {
+    .row,
+    .row-arrow,
+    .row-arrow-ext {
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .row:active,
+    .row:hover .row-arrow,
+    .row:active .row-arrow,
+    .row:hover .row-arrow-ext,
+    .row:active .row-arrow-ext {
+      transform: none;
+    }
+
+    .row:active {
+      border-color: var(--color-accent);
+    }
   }
 
   .row:hover {
