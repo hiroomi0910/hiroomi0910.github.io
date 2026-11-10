@@ -35,7 +35,7 @@ GitHub Pages（無料プラン）のため、ソースもコミット履歴も�
 ## 作業の約束
 
 - コミットメッセージのタイトルは Conventional Commits（`feat:` / `fix:` / `chore:` / `docs:` / `ci:` など、`<type>(<scope>): <要約>`）。種類の違う変更は別コミット
-- 変更のたびに `package.json` の `version` を上げる（`chore(release): v<版>`）
+- 変更のたびに `package.json` の `version` を上げる（`chore(release): v<版>`）。ただし、サイトの表示に関係しない変更（`docs/` や CLAUDE.md だけの変更）では version を上げない
 - コード中のコメントとドキュメントは日本語でよい
 - `main` に直接 push せず、作業ブランチで PR を作る。マージは本人が行う
 - 外部サービスの仕様（Astro、GitHub Pages、Qiita API、Lighthouse CI）は推測せず公式ドキュメントで確認する
