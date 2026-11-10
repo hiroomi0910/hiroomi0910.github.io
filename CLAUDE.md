@@ -40,3 +40,4 @@ GitHub Pages（無料プラン）のため、ソースもコミット履歴も�
 - `main` に直接 push せず、作業ブランチで PR を作る。マージは本人が行う
 - 外部サービスの仕様（Astro、GitHub Pages、Qiita API、Lighthouse CI）は推測せず公式ドキュメントで確認する
 - 判断に迷う点・`[要確認]` は最終報告にまとめる
+- コミットメッセージ・PR の本文に claude.ai のセッションのリンク（Claude-Session: の行など）を入れない。公開リポジトリのため
